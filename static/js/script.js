@@ -1,20 +1,13 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
 
 const statusDiv = document.getElementById("status");
 const earSpan = document.getElementById("ear");
-const stateSpan = document.getElementById("state");
+const closedTimeSpan = document.getElementById("closed-time");
 
-const alarm = document.getElementById("alarm");
+const ctx = canvas.getContext("2d");
 
-let alarmPlaying = false;
-let cameraReady = false;
-
-// ------------------------------
-// Start Camera
-// ------------------------------
-
+// Start Webcam
 async function startCamera() {
 
     try {
@@ -22,8 +15,8 @@ async function startCamera() {
         const stream = await navigator.mediaDevices.getUserMedia({
 
             video: {
-                width: { ideal: 640 },
-                height: { ideal: 480 },
+                width: 640,
+                height: 480,
                 facingMode: "user"
             },
 
@@ -38,11 +31,6 @@ async function startCamera() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            cameraReady = true;
-
-            statusDiv.innerHTML = "📷 Camera Ready";
-            statusDiv.style.color = "#00bfff";
-
             detectLoop();
 
         };
@@ -53,75 +41,29 @@ async function startCamera() {
 
         console.error(err);
 
-        statusDiv.innerHTML = "❌ Unable to access camera";
-        statusDiv.style.color = "#ff4444";
+        statusDiv.innerHTML = "❌ Unable to access webcam";
+        statusDiv.style.background = "#8b0000";
+        statusDiv.style.color = "#ffffff";
 
     }
 
 }
 
-// ------------------------------
-// Play Alarm
-// ------------------------------
-
-function playAlarm() {
-
-    if (alarmPlaying)
-        return;
-
-    alarm.loop = true;
-
-    alarm.play().then(() => {
-
-        alarmPlaying = true;
-
-    }).catch(err => {
-
-        console.log(err);
-
-    });
-
-}
-
-// ------------------------------
-// Stop Alarm
-// ------------------------------
-
-function stopAlarm() {
-
-    if (!alarmPlaying)
-        return;
-
-    alarm.pause();
-
-    alarm.currentTime = 0;
-
-    alarmPlaying = false;
-
-}
-
-// ------------------------------
-// Send Frame
-// ------------------------------
-
+// Send frame to Flask backend
 async function sendFrame() {
 
-    if (!cameraReady)
+    if (video.readyState !== 4)
         return;
 
     ctx.drawImage(
-
         video,
-
         0,
         0,
-
         canvas.width,
         canvas.height
-
     );
 
-    canvas.toBlob(async (blob) => {
+    canvas.toBlob(async function (blob) {
 
         const formData = new FormData();
 
@@ -136,56 +78,68 @@ async function sendFrame() {
             const response = await fetch("/detect", {
 
                 method: "POST",
-
                 body: formData
 
             });
 
-            if (!response.ok)
-                throw new Error("Server Error");
-
             const data = await response.json();
 
-            //---------------------------------
+            // Update EAR
+            earSpan.innerText = Number(data.ear).toFixed(3);
 
-            earSpan.textContent = data.ear.toFixed(3);
+            // Update Closed Time
+            closedTimeSpan.innerText = Number(data.closed_seconds).toFixed(1);
 
-            //---------------------------------
+            // Update Status
+            switch (data.status) {
 
-            if (data.ear === 0) {
+                case "ALERT":
 
-                statusDiv.innerHTML = "👤 No Face Detected";
-                statusDiv.style.color = "#ffae42";
+                    statusDiv.innerHTML = "🟢 DRIVER ALERT";
+                    statusDiv.style.background = "#00b050";
+                    statusDiv.style.color = "#ffffff";
+                    break;
 
-                stateSpan.textContent = "No Face";
+                case "SLEEPY":
 
-                stopAlarm();
+                    statusDiv.innerHTML = "🟡 Eyes Closing...";
+                    statusDiv.style.background = "#ffd966";
+                    statusDiv.style.color = "#000000";
+                    break;
 
-                return;
+                case "EYES CLOSED":
 
-            }
+                    statusDiv.innerHTML =
+                        `🔴 Eyes Closed (${Number(data.closed_seconds).toFixed(1)} s)`;
 
-            //---------------------------------
+                    statusDiv.style.background = "#ff3333";
+                    statusDiv.style.color = "#ffffff";
+                    break;
 
-            if (data.is_drowsy) {
+                case "DROWSY":
 
-                statusDiv.innerHTML = "⚠️ DROWSINESS DETECTED";
-                statusDiv.style.color = "#ff2222";
+                    statusDiv.innerHTML =
+                        "🚨 DROWSINESS DETECTED 🚨";
 
-                stateSpan.textContent = "Drowsy";
+                    statusDiv.style.background = "#8b0000";
+                    statusDiv.style.color = "#ffffff";
+                    break;
 
-                playAlarm();
+                case "NO FACE":
 
-            }
+                    statusDiv.innerHTML =
+                        "⚪ NO FACE DETECTED";
 
-            else {
+                    statusDiv.style.background = "#666666";
+                    statusDiv.style.color = "#ffffff";
+                    break;
 
-                statusDiv.innerHTML = "✅ Alert";
-                statusDiv.style.color = "#00ff88";
+                default:
 
-                stateSpan.textContent = "Alert";
-
-                stopAlarm();
+                    statusDiv.innerHTML = "Waiting...";
+                    statusDiv.style.background = "#333333";
+                    statusDiv.style.color = "#ffffff";
+                    break;
 
             }
 
@@ -196,34 +150,25 @@ async function sendFrame() {
             console.error(err);
 
             statusDiv.innerHTML = "❌ Server Disconnected";
-            statusDiv.style.color = "#ff4444";
-
-            stateSpan.textContent = "Offline";
-
-            stopAlarm();
+            statusDiv.style.background = "#8b0000";
+            statusDiv.style.color = "#ffffff";
 
         }
 
-    }, "image/jpeg", 0.75);
+    }, "image/jpeg", 0.8);
 
 }
 
-// ------------------------------
-// Detection Loop
-// ------------------------------
-
+// Detection loop
 function detectLoop() {
 
     sendFrame();
 
-    setTimeout(detectLoop, 120);
+    setTimeout(
+        detectLoop,
+        100
+    );
 
 }
 
-// ------------------------------
-
-window.onload = () => {
-
-    startCamera();
-
-};
+startCamera();
