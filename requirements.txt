@@ -4,4 +4,4 @@ gunicorn
 mediapipe
 numpy
 opencv-python-headless
-pygame⏎    
+pygame
