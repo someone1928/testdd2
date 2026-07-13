@@ -7,7 +7,43 @@ const closedTimeSpan = document.getElementById("closed-time");
 
 const ctx = canvas.getContext("2d");
 
-// Start Webcam
+// Alarm Sound
+const alarm = new Audio("/static/alarm.wav");
+alarm.loop = true;
+
+let alarmPlaying = false;
+
+function playAlarm() {
+
+    if (!alarmPlaying) {
+
+        alarm.play().then(() => {
+
+            alarmPlaying = true;
+
+        }).catch(err => {
+
+            console.log("Audio blocked:", err);
+
+        });
+
+    }
+
+}
+
+function stopAlarm() {
+
+    if (alarmPlaying) {
+
+        alarm.pause();
+        alarm.currentTime = 0;
+        alarmPlaying = false;
+
+    }
+
+}
+
+// Open webcam
 async function startCamera() {
 
     try {
@@ -49,7 +85,7 @@ async function startCamera() {
 
 }
 
-// Send frame to Flask backend
+// Send frame to Flask
 async function sendFrame() {
 
     if (video.readyState !== 4)
@@ -63,7 +99,7 @@ async function sendFrame() {
         canvas.height
     );
 
-    canvas.toBlob(async function (blob) {
+    canvas.toBlob(async function(blob) {
 
         const formData = new FormData();
 
@@ -87,58 +123,80 @@ async function sendFrame() {
             // Update EAR
             earSpan.innerText = Number(data.ear).toFixed(3);
 
-            // Update Closed Time
-            closedTimeSpan.innerText = Number(data.closed_seconds).toFixed(1);
+            // Update timer
+            if (closedTimeSpan) {
 
-            // Update Status
+                closedTimeSpan.innerText =
+                    Number(data.closed_seconds).toFixed(1);
+
+            }
+
             switch (data.status) {
 
                 case "ALERT":
 
+                    stopAlarm();
+
                     statusDiv.innerHTML = "🟢 DRIVER ALERT";
                     statusDiv.style.background = "#00b050";
                     statusDiv.style.color = "#ffffff";
+
                     break;
 
                 case "SLEEPY":
 
+                    stopAlarm();
+
                     statusDiv.innerHTML = "🟡 Eyes Closing...";
                     statusDiv.style.background = "#ffd966";
                     statusDiv.style.color = "#000000";
+
                     break;
 
                 case "EYES CLOSED":
+
+                    playAlarm();
 
                     statusDiv.innerHTML =
                         `🔴 Eyes Closed (${Number(data.closed_seconds).toFixed(1)} s)`;
 
                     statusDiv.style.background = "#ff3333";
                     statusDiv.style.color = "#ffffff";
+
                     break;
 
                 case "DROWSY":
+
+                    playAlarm();
 
                     statusDiv.innerHTML =
                         "🚨 DROWSINESS DETECTED 🚨";
 
                     statusDiv.style.background = "#8b0000";
                     statusDiv.style.color = "#ffffff";
+
                     break;
 
                 case "NO FACE":
+
+                    stopAlarm();
 
                     statusDiv.innerHTML =
                         "⚪ NO FACE DETECTED";
 
                     statusDiv.style.background = "#666666";
                     statusDiv.style.color = "#ffffff";
+
                     break;
 
                 default:
 
+                    stopAlarm();
+
                     statusDiv.innerHTML = "Waiting...";
-                    statusDiv.style.background = "#333333";
-                    statusDiv.style.color = "#ffffff";
+                    statusDiv.style.background = "#444";
+                    statusDiv.style.color = "#fff";
+
                     break;
 
             }
@@ -148,6 +206,8 @@ async function sendFrame() {
         catch (err) {
 
             console.error(err);
+
+            stopAlarm();
 
             statusDiv.innerHTML = "❌ Server Disconnected";
             statusDiv.style.background = "#8b0000";
