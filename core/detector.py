@@ -1,5 +1,7 @@
 import os
 import math
+import time
+
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -28,9 +30,22 @@ class DrowsinessDetector:
         self.average_ear = 0.0
         self.is_drowsy = False
 
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # UI Status
+        self.status = "ALERT"
 
-        alarm_path = os.path.join(base_dir, "alarm.wav")
+        # Eye closure tracking
+        self.eye_closed_start = None
+        self.eye_closed_seconds = 0.0
+        self.eye_closed_alert = False
+
+        base_dir = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__))
+        )
+
+        alarm_path = os.path.join(
+            base_dir,
+            "alarm.wav"
+        )
 
         try:
             pygame.mixer.init()
@@ -83,7 +98,10 @@ class DrowsinessDetector:
 
     def process_frame(self, frame):
 
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb = cv2.cvtColor(
+            frame,
+            cv2.COLOR_BGR2RGB
+        )
 
         mp_image = mp.Image(
             image_format=mp.ImageFormat.SRGB,
@@ -94,9 +112,21 @@ class DrowsinessDetector:
 
         self.is_drowsy = False
 
+        # No face detected
         if not results.face_landmarks:
+
             self.frame_counter = 0
             self.average_ear = 0.0
+
+            self.eye_closed_start = None
+            self.eye_closed_seconds = 0.0
+            self.eye_closed_alert = False
+
+            self.status = "NO FACE"
+
+            if self.alarm_sound:
+                self.alarm_sound.stop()
+
             return frame
 
         landmarks = results.face_landmarks[0]
@@ -113,13 +143,41 @@ class DrowsinessDetector:
 
         self.average_ear = (left + right) / 2
 
+        current_time = time.time()
+
         if self.average_ear < self.EAR_THRESHOLD:
 
             self.frame_counter += 1
 
+            if self.eye_closed_start is None:
+                self.eye_closed_start = current_time
+
+            self.eye_closed_seconds = (
+                current_time - self.eye_closed_start
+            )
+
+            # Eyes closed for less than 2 seconds
+            if self.eye_closed_seconds < 2:
+
+                self.status = "SLEEPY"
+
+            # Eyes closed for 2+ seconds
+            else:
+
+                self.eye_closed_alert = True
+                self.status = "EYES CLOSED"
+
+                if (
+                    self.alarm_sound
+                    and not pygame.mixer.get_busy()
+                ):
+                    self.alarm_sound.play()
+
+            # Drowsiness confirmed
             if self.frame_counter >= self.CONSECUTIVE_FRAMES:
 
                 self.is_drowsy = True
+                self.status = "DROWSY"
 
                 if (
                     self.alarm_sound
@@ -130,5 +188,15 @@ class DrowsinessDetector:
         else:
 
             self.frame_counter = 0
+
+            self.eye_closed_start = None
+            self.eye_closed_seconds = 0.0
+            self.eye_closed_alert = False
+
+            self.is_drowsy = False
+            self.status = "ALERT"
+
+            if self.alarm_sound:
+                self.alarm_sound.stop()
 
         return frame
