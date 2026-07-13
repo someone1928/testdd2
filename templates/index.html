@@ -2,23 +2,28 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Driver Drowsiness Detection System</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Driver Drowsiness Detection</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
 </head>
 
 <body>
 
     <div class="container">
 
-        <header>
-            <h1>😴 Driver Drowsiness Detection System</h1>
-            <p>Real-time AI Powered Fatigue Monitoring</p>
-        </header>
+        <h1>😴 Driver Drowsiness Detector</h1>
 
         <div class="video-container">
 
@@ -36,54 +41,38 @@
 
         </div>
 
-        <div id="status" class="status">
+        <div
+            id="status"
+            class="status"
+        >
             Initializing Camera...
         </div>
 
-        <div class="info-card">
+        <div class="info">
 
-            <div class="info-item">
+            <div class="card">
+
                 <h3>EAR</h3>
+
                 <span id="ear">0.000</span>
+
             </div>
 
-            <div class="info-item">
-                <h3>Status</h3>
-                <span id="state">Waiting...</span>
+            <div class="card">
+
+                <h3>Eyes Closed</h3>
+
+                <span id="closed-time">0.0</span>s
+
             </div>
-
-        </div>
-
-        <div class="footer">
-
-            <p>
-                Keep your face visible to the camera.
-                An alarm will play when drowsiness is detected.
-            </p>
 
         </div>
 
     </div>
 
-    <!-- Hidden canvas used for capturing frames -->
-    <canvas
-        id="captureCanvas"
-        hidden
-    ></canvas>
-
-    <!-- Alarm -->
-    <audio
-        id="alarm"
-        preload="auto"
-    >
-        <source
-            src="{{ url_for('static', filename='alarm.wav') }}"
-            type="audio/wav">
-    </audio>
-
     <script
-        src="{{ url_for('static', filename='js/script.js') }}">
-    </script>
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
 
 </body>
 
