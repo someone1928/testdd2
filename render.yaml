@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: drowsiness-detector
+
+    runtime: docker
+
+    plan: free
+
+    dockerfilePath: ./Dockerfile
+
+    autoDeploy: true
