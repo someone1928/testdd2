@@ -1,0 +1,5 @@
+Flask
+opencv-python
+mediapipe>=0.10.30
+pygame-ce
+flask-cors
