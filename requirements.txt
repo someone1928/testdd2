@@ -1,6 +1,7 @@
 Flask
-opencv-python
-mediapipe>=0.10.30
-pygame-ce
-flask-cors
+Flask-Cors
 gunicorn
+mediapipe
+numpy
+opencv-python-headless
+pygame⏎    
