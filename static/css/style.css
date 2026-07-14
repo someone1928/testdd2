@@ -337,13 +337,25 @@ video{
 
     background:var(--panel);
 
-    border-radius:20px;
-
     border:1px solid var(--border);
 
-    padding:25px;
+    border-radius:18px;
 
-    margin-bottom:30px;
+    padding:18px;
+
+    width:100%;
+
+    max-width:420px;
+
+    margin:20px auto;
+
+}
+
+#earChart{
+
+    width:100% !important;
+
+    height:180px !important;
 
 }
 
