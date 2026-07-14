@@ -5,74 +5,268 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Driver Drowsiness Detection</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <h1>😴 Driver Drowsiness Detector</h1>
+    <!-- ================= HEADER ================= -->
 
-        <div class="video-container">
+    <header class="header">
 
-            <video
-                id="video"
-                autoplay
-                playsinline
-                muted
-            ></video>
+        <div>
 
-            <canvas
-                id="canvas"
-                hidden
-            ></canvas>
+            <h1>😴 Driver Drowsiness Detection</h1>
+
+            <p class="subtitle">
+                AI Powered Real-Time Driver Monitoring System
+            </p>
 
         </div>
 
-        <div
-            id="status"
-            class="status"
-        >
-            Initializing Camera...
+        <div class="clock-card">
+
+            <h3>System Time</h3>
+
+            <span id="clock">
+                --:--:--
+            </span>
+
         </div>
 
-        <div class="info">
+    </header>
 
-            <div class="card">
 
-                <h3>EAR</h3>
+    <!-- ================= TOP CARDS ================= -->
 
-                <span id="ear">0.000</span>
+    <section class="stats-grid">
+
+        <div class="card">
+
+            <h3>👁 EAR</h3>
+
+            <h2 id="ear">
+                0.000
+            </h2>
+
+        </div>
+
+        <div class="card">
+
+            <h3>⏱ Eyes Closed</h3>
+
+            <h2>
+
+                <span id="closed-time">
+                    0.0
+                </span>s
+
+            </h2>
+
+        </div>
+
+        <div class="card">
+
+            <h3>🚦 Detection</h3>
+
+            <h2 id="status-card">
+                Monitoring
+            </h2>
+
+        </div>
+
+        <div class="card">
+
+            <h3>🟢 System</h3>
+
+            <h2>
+                Online
+            </h2>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <section class="main-grid">
+
+        <!-- Camera -->
+
+        <div class="camera-panel">
+
+            <div class="panel-title">
+
+                📹 Live Camera
 
             </div>
 
-            <div class="card">
+            <div class="video-container">
 
-                <h3>Eyes Closed</h3>
+                <video id="video"
+                       autoplay
+                       playsinline
+                       muted></video>
 
-                <span id="closed-time">0.0</span>s
+                <canvas id="canvas"
+                        hidden></canvas>
+
+            </div>
+
+            <div id="status"
+                 class="status">
+
+                Initializing Camera...
 
             </div>
 
         </div>
 
-    </div>
 
-    <script
-        src="{{ url_for('static', filename='js/script.js') }}"
-    ></script>
+        <!-- Right Sidebar -->
+
+        <aside class="side-panel">
+
+            <div class="info-card">
+
+                <h3>📋 Session Information</h3>
+
+                <table>
+
+                    <tr>
+                        <td>Mode</td>
+                        <td>Real-Time</td>
+                    </tr>
+
+                    <tr>
+                        <td>Camera</td>
+                        <td>Webcam</td>
+                    </tr>
+
+                    <tr>
+                        <td>Detection</td>
+                        <td>Face + EAR</td>
+                    </tr>
+
+                    <tr>
+                        <td>Backend</td>
+                        <td>Flask</td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <h3>📈 Driver Health</h3>
+
+                <ul>
+
+                    <li>✔ Face Tracking</li>
+
+                    <li>✔ Blink Monitoring</li>
+
+                    <li>✔ EAR Analysis</li>
+
+                    <li>✔ Drowsiness Alert</li>
+
+                </ul>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+
+    <!-- ================= CHART ================= -->
+
+    <section class="chart-section">
+
+        <div class="panel-title">
+
+            📊 EAR Trend (Live)
+
+        </div>
+
+        <canvas id="earChart"></canvas>
+
+    </section>
+
+
+    <!-- ================= FOOTER CARDS ================= -->
+
+    <section class="bottom-grid">
+
+        <div class="card">
+
+            <h3>Detection Engine</h3>
+
+            <p>
+                MediaPipe Face Mesh
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Alert System</h3>
+
+            <p>
+                Audio Alarm Enabled
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Deployment</h3>
+
+            <p>
+                Flask + Render Cloud
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h3>Status</h3>
+
+            <p>
+                Ready for Monitoring
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 
